@@ -102,7 +102,7 @@ dbGetQuery( db ,
 	FROM npi 
 	GROUP BY provider_gender_code" 
 )
-seer_three_columns_df <- 
+seer_slim_df <- 
 	dbGetQuery( db , 
 		"SELECT 
 			provider_enumeration_year , 
@@ -111,14 +111,15 @@ seer_three_columns_df <-
 		FROM npi" 
 	)
 
-t.test( provider_enumeration_year ~ individual , seer_three_columns_df )
-this_table <- table( seer_three_columns_df[ , c( "individual" , "is_sole_proprietor" ) ] )
+t.test( provider_enumeration_year ~ individual , seer_slim_df )
+this_table <-
+	table( seer_slim_df[ , c( "individual" , "is_sole_proprietor" ) ] )
 
 chisq.test( this_table )
 glm_result <- 
 	glm( 
 		provider_enumeration_year ~ individual + is_sole_proprietor , 
-		data = seer_three_columns_df
+		data = seer_slim_df
 	)
 
 summary( glm_result )
