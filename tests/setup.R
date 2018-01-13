@@ -103,6 +103,7 @@ dbGetQuery( db ,
 	GROUP BY provider_gender_code" 
 )
 library(dplyr)
+library(dbplyr)
 dplyr_db <- dplyr::src_sqlite( dbdir )
 seer_tbl <- tbl( dplyr_db , 'npi' )
 seer_tbl %>%
