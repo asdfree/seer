@@ -8,118 +8,138 @@ lodown( "seer" , output_dir = file.path( getwd() ) ,
 	your_username = my_username , 
 	your_password = my_password )
 library(DBI)
-dbdir <- file.path( getwd() , "SQLite.db" )
-db <- dbConnect( RSQLite::SQLite() , dbdir )
+seer_cat_df <- 
+	file.path( 
+		getwd() , 
+		"incidence/yr1973_2014.seer9/LYMYLEUK.rds" 
+	)
 
-dbSendQuery( db , "ALTER TABLE npi ADD COLUMN individual INTEGER" )
-
-dbSendQuery( db , 
-	"UPDATE npi 
-	SET individual = 
-		CASE WHEN entity_type_code = 1 THEN 1 ELSE 0 END" 
-)
-
-dbSendQuery( db , "ALTER TABLE npi ADD COLUMN provider_enumeration_year INTEGER" )
-
-dbSendQuery( db , 
-	"UPDATE npi 
-	SET provider_enumeration_year = 
-		CAST( SUBSTRING( provider_enumeration_date , 7 , 10 ) AS INTEGER )" 
-)
-dbGetQuery( db , "SELECT COUNT(*) FROM npi" )
+seer_df <- 
+	transform( 
+		seer_df , 
+		
+		survival_months = ifelse( srv_time_mon == 9999 , NA , as.numeric( srv_time_mon ) ) ,
+		
+		female = as.numeric( sex == 2 ) ,
+		
+		race_ethnicity =
+			ifelse( race1v == 99 , "unknown" ,
+			ifelse( nhiade > 0 , "hispanic" , 
+			ifelse( race1v == 1 , "white non-hispanic" ,
+			ifelse( race1v == 2 , "black non-hispanic , 
+				"other non-hispanic" ) ) ) )
+		
+		marital_status_at_dx =
+			factor( 
+				as.numeric( mar_stat ) , 
+				levels = c( 1:6 , 9 ) ,
+				labels =
+					c(
+						"single (never married)" ,
+						"married" ,
+						"separated" ,
+						"divorced" ,
+						"widowed" ,
+						"unmarried or domestic partner or unregistered" ,
+						"unknown"
+					)
+			)
+	)
+	
+dbGetQuery( db , "SELECT COUNT(*) FROM " )
 
 dbGetQuery( db ,
 	"SELECT
-		provider_gender_code ,
+		race_ethnicity ,
 		COUNT(*) 
-	FROM npi
-	GROUP BY provider_gender_code"
+	FROM 
+	GROUP BY race_ethnicity"
 )
-dbGetQuery( db , "SELECT AVG( provider_enumeration_year ) FROM npi" )
+dbGetQuery( db , "SELECT AVG( survival_months ) FROM " )
 
 dbGetQuery( db , 
 	"SELECT 
-		provider_gender_code , 
-		AVG( provider_enumeration_year ) AS mean_provider_enumeration_year
-	FROM npi 
-	GROUP BY provider_gender_code" 
+		race_ethnicity , 
+		AVG( survival_months ) AS mean_survival_months
+	FROM 
+	GROUP BY race_ethnicity" 
 )
 dbGetQuery( db , 
 	"SELECT 
-		is_sole_proprietor , 
-		COUNT(*) / ( SELECT COUNT(*) FROM npi ) 
-			AS share_is_sole_proprietor
-	FROM npi 
-	GROUP BY is_sole_proprietor" 
+		marital_status_at_dx , 
+		COUNT(*) / ( SELECT COUNT(*) FROM ) 
+			AS share_marital_status_at_dx
+	FROM 
+	GROUP BY marital_status_at_dx" 
 )
-dbGetQuery( db , "SELECT SUM( provider_enumeration_year ) FROM npi" )
+dbGetQuery( db , "SELECT SUM( survival_months ) FROM " )
 
 dbGetQuery( db , 
 	"SELECT 
-		provider_gender_code , 
-		SUM( provider_enumeration_year ) AS sum_provider_enumeration_year 
-	FROM npi 
-	GROUP BY provider_gender_code" 
+		race_ethnicity , 
+		SUM( survival_months ) AS sum_survival_months 
+	FROM 
+	GROUP BY race_ethnicity" 
 )
 RSQLite::initExtension( db )
 
 dbGetQuery( db , 
 	"SELECT 
-		LOWER_QUARTILE( provider_enumeration_year ) , 
-		MEDIAN( provider_enumeration_year ) , 
-		UPPER_QUARTILE( provider_enumeration_year ) 
-	FROM npi" 
+		LOWER_QUARTILE( survival_months ) , 
+		MEDIAN( survival_months ) , 
+		UPPER_QUARTILE( survival_months ) 
+	FROM " 
 )
 
 dbGetQuery( db , 
 	"SELECT 
-		provider_gender_code , 
-		LOWER_QUARTILE( provider_enumeration_year ) AS lower_quartile_provider_enumeration_year , 
-		MEDIAN( provider_enumeration_year ) AS median_provider_enumeration_year , 
-		UPPER_QUARTILE( provider_enumeration_year ) AS upper_quartile_provider_enumeration_year
-	FROM npi 
-	GROUP BY provider_gender_code" 
+		race_ethnicity , 
+		LOWER_QUARTILE( survival_months ) AS lower_quartile_survival_months , 
+		MEDIAN( survival_months ) AS median_survival_months , 
+		UPPER_QUARTILE( survival_months ) AS upper_quartile_survival_months
+	FROM 
+	GROUP BY race_ethnicity" 
 )
 dbGetQuery( db ,
 	"SELECT
-		AVG( provider_enumeration_year )
-	FROM npi
-	WHERE provider_business_practice_location_address_state_name = 'CA'"
+		AVG( survival_months )
+	FROM 
+	WHERE rept_src == 1"
 )
 RSQLite::initExtension( db )
 
 dbGetQuery( db , 
 	"SELECT 
-		VARIANCE( provider_enumeration_year ) , 
-		STDEV( provider_enumeration_year ) 
-	FROM npi" 
+		VARIANCE( survival_months ) , 
+		STDEV( survival_months ) 
+	FROM " 
 )
 
 dbGetQuery( db , 
 	"SELECT 
-		provider_gender_code , 
-		VARIANCE( provider_enumeration_year ) AS var_provider_enumeration_year ,
-		STDEV( provider_enumeration_year ) AS stddev_provider_enumeration_year
-	FROM npi 
-	GROUP BY provider_gender_code" 
+		race_ethnicity , 
+		VARIANCE( survival_months ) AS var_survival_months ,
+		STDEV( survival_months ) AS stddev_survival_months
+	FROM 
+	GROUP BY race_ethnicity" 
 )
 seer_slim_df <- 
 	dbGetQuery( db , 
 		"SELECT 
-			provider_enumeration_year , 
-			individual ,
-			is_sole_proprietor
-		FROM npi" 
+			survival_months , 
+			female ,
+			marital_status_at_dx
+		FROM " 
 	)
 
-t.test( provider_enumeration_year ~ individual , seer_slim_df )
+t.test( survival_months ~ female , seer_slim_df )
 this_table <-
-	table( seer_slim_df[ , c( "individual" , "is_sole_proprietor" ) ] )
+	table( seer_slim_df[ , c( "female" , "marital_status_at_dx" ) ] )
 
 chisq.test( this_table )
 glm_result <- 
 	glm( 
-		provider_enumeration_year ~ individual + is_sole_proprietor , 
+		survival_months ~ female + marital_status_at_dx , 
 		data = seer_slim_df
 	)
 
@@ -127,11 +147,10 @@ summary( glm_result )
 library(dplyr)
 library(dbplyr)
 dplyr_db <- dplyr::src_sqlite( dbdir )
-seer_tbl <- tbl( dplyr_db , 'npi' )
+seer_tbl <- tbl( dplyr_db , '' )
 seer_tbl %>%
-	summarize( mean = mean( provider_enumeration_year ) )
+	summarize( mean = mean( survival_months ) )
 
 seer_tbl %>%
-	group_by( provider_gender_code ) %>%
-	summarize( mean = mean( provider_enumeration_year ) )
-dbGetQuery( db , "SELECT COUNT(*) FROM npi" )
+	group_by( race_ethnicity ) %>%
+	summarize( mean = mean( survival_months ) )
