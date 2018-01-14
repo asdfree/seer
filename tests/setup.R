@@ -8,7 +8,7 @@ lodown( "seer" , output_dir = file.path( getwd() ) ,
 	your_username = my_username , 
 	your_password = my_password )
 library(DBI)
-seer_cat_df <- 
+seer_df <- 
 	file.path( 
 		getwd() , 
 		"incidence/yr1973_2014.seer9/LYMYLEUK.rds" 
