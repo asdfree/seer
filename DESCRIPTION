@@ -4,7 +4,7 @@ Title: seer
 Version: 0.1.0
 Author: Anthony Joseph Damico
 Maintainer: Anthony Joseph Damico <ajdamico@gmail.com>
-Description: A continuous integration package, tested on ajdamico/asdfree commit c636bf8e131721da381b74414978fc94fedc0215 ajdamico/lodown commit 1a5c21b5e9adcd7b9afdb6ee7a73d80fbe4c2c25
+Description: A continuous integration package, tested on ajdamico/asdfree commit 291b34dee4f435f4bd31fe4bce00bc124d426d04 ajdamico/lodown commit 1a5c21b5e9adcd7b9afdb6ee7a73d80fbe4c2c25
 License: GPL-3
 Imports: lodown, dplyr
 Encoding: UTF-8

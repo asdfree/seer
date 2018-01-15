@@ -7,13 +7,15 @@ library(lodown)
 lodown( "seer" , output_dir = file.path( getwd() ) , 
 	your_username = my_username , 
 	your_password = my_password )
-seer_df <- 
-	readRDS(
-		file.path( 
-			getwd() , 
-			"incidence/yr1973_2014.seer9/LYMYLEUK.rds" 
-		)
+available_files <-
+	list.files( 
+		file.path( getwd() ) , 
+		recursive = TRUE , 
+		full.names = TRUE 
 	)
+
+seer_df <- 
+	readRDS( grep( "incidence(.*)LYMYLEUK" , available_files , value = TRUE ) )
 
 seer_df <- 
 	transform( 
