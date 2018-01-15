@@ -52,12 +52,13 @@ seer_df <-
 nrow( seer_df )
 
 table( seer_df[ , "race_ethnicity" ] , useNA = "always" )
-mean( seer_df[ , "survival_months" ] )
+mean( seer_df[ , "survival_months" ] , na.rm = TRUE )
 
 tapply(
 	seer_df[ , "survival_months" ] ,
 	seer_df[ , "race_ethnicity" ] ,
-	mean 
+	mean ,
+	na.rm = TRUE 
 )
 prop.table( table( seer_df[ , "marital_status_at_dx" ] ) )
 
@@ -65,29 +66,32 @@ prop.table(
 	table( seer_df[ , c( "marital_status_at_dx" , "race_ethnicity" ) ] ) ,
 	margin = 2
 )
-sum( seer_df[ , "survival_months" ] )
+sum( seer_df[ , "survival_months" ] , na.rm = TRUE )
 
 tapply(
 	seer_df[ , "survival_months" ] ,
 	seer_df[ , "race_ethnicity" ] ,
-	sum 
+	sum ,
+	na.rm = TRUE 
 )
-quantile( seer_df[ , "survival_months" ] , 0.5 )
+quantile( seer_df[ , "survival_months" ] , 0.5 , na.rm = TRUE )
 
 tapply(
 	seer_df[ , "survival_months" ] ,
 	seer_df[ , "race_ethnicity" ] ,
 	quantile ,
-	0.5 
+	0.5 ,
+	na.rm = TRUE 
 )
 sub_seer_df <- subset( seer_df , rept_src == 1 )
-mean( sub_seer_df[ , "survival_months" ] )
-var( seer_df[ , "survival_months" ] )
+mean( sub_seer_df[ , "survival_months" ] , na.rm = TRUE )
+var( seer_df[ , "survival_months" ] , na.rm = TRUE )
 
 tapply(
 	seer_df[ , "survival_months" ] ,
 	seer_df[ , "race_ethnicity" ] ,
-	var 
+	var ,
+	na.rm = TRUE 
 )
 t.test( survival_months ~ female , seer_df )
 this_table <- table( seer_df[ , c( "female" , "marital_status_at_dx" ) ] )
@@ -103,8 +107,8 @@ summary( glm_result )
 library(dplyr)
 seer_tbl <- tbl_df( seer_df )
 seer_tbl %>%
-	summarize( mean = mean( survival_months ) )
+	summarize( mean = mean( survival_months , na.rm = TRUE ) )
 
 seer_tbl %>%
 	group_by( race_ethnicity ) %>%
-	summarize( mean = mean( survival_months ) )
+	summarize( mean = mean( survival_months , na.rm = TRUE ) )
