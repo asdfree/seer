@@ -15,7 +15,7 @@ available_files <-
 	)
 
 seer_df <- 
-	readRDS( grep( "incidence(.*)LYMYLEUK" , available_files , value = TRUE ) )
+	readRDS( grep( "incidence(.*)yr1973(.*)LYMYLEUK" , available_files , value = TRUE ) )
 
 seer_df <- 
 	transform( 
