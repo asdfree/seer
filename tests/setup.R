@@ -7,11 +7,12 @@ library(lodown)
 lodown( "seer" , output_dir = file.path( getwd() ) , 
 	your_username = my_username , 
 	your_password = my_password )
-library(DBI)
 seer_df <- 
-	file.path( 
-		getwd() , 
-		"incidence/yr1973_2014.seer9/LYMYLEUK.rds" 
+	readRDS(
+		file.path( 
+			getwd() , 
+			"incidence/yr1973_2014.seer9/LYMYLEUK.rds" 
+		)
 	)
 
 seer_df <- 
@@ -46,108 +47,59 @@ seer_df <-
 			)
 	)
 	
-dbGetQuery( db , "SELECT COUNT(*) FROM " )
+nrow( seer_df )
 
-dbGetQuery( db ,
-	"SELECT
-		race_ethnicity ,
-		COUNT(*) 
-	FROM 
-	GROUP BY race_ethnicity"
-)
-dbGetQuery( db , "SELECT AVG( survival_months ) FROM " )
+table( seer_df[ , "race_ethnicity" ] , useNA = "always" )
+mean( seer_df[ , "survival_months" ] )
 
-dbGetQuery( db , 
-	"SELECT 
-		race_ethnicity , 
-		AVG( survival_months ) AS mean_survival_months
-	FROM 
-	GROUP BY race_ethnicity" 
+tapply(
+	seer_df[ , "survival_months" ] ,
+	seer_df[ , "race_ethnicity" ] ,
+	mean 
 )
-dbGetQuery( db , 
-	"SELECT 
-		marital_status_at_dx , 
-		COUNT(*) / ( SELECT COUNT(*) FROM ) 
-			AS share_marital_status_at_dx
-	FROM 
-	GROUP BY marital_status_at_dx" 
-)
-dbGetQuery( db , "SELECT SUM( survival_months ) FROM " )
+prop.table( table( seer_df[ , "marital_status_at_dx" ] ) )
 
-dbGetQuery( db , 
-	"SELECT 
-		race_ethnicity , 
-		SUM( survival_months ) AS sum_survival_months 
-	FROM 
-	GROUP BY race_ethnicity" 
+prop.table(
+	table( seer_df[ , c( "marital_status_at_dx" , "race_ethnicity" ) ] ) ,
+	margin = 2
 )
-RSQLite::initExtension( db )
+sum( seer_df[ , "survival_months" ] )
 
-dbGetQuery( db , 
-	"SELECT 
-		LOWER_QUARTILE( survival_months ) , 
-		MEDIAN( survival_months ) , 
-		UPPER_QUARTILE( survival_months ) 
-	FROM " 
+tapply(
+	seer_df[ , "survival_months" ] ,
+	seer_df[ , "race_ethnicity" ] ,
+	sum 
 )
+quantile( seer_df[ , "survival_months" ] , 0.5 )
 
-dbGetQuery( db , 
-	"SELECT 
-		race_ethnicity , 
-		LOWER_QUARTILE( survival_months ) AS lower_quartile_survival_months , 
-		MEDIAN( survival_months ) AS median_survival_months , 
-		UPPER_QUARTILE( survival_months ) AS upper_quartile_survival_months
-	FROM 
-	GROUP BY race_ethnicity" 
+tapply(
+	seer_df[ , "survival_months" ] ,
+	seer_df[ , "race_ethnicity" ] ,
+	quantile ,
+	0.5 
 )
-dbGetQuery( db ,
-	"SELECT
-		AVG( survival_months )
-	FROM 
-	WHERE rept_src == 1"
-)
-RSQLite::initExtension( db )
+sub_seer_df <- subset( seer_df , rept_src == 1 )
+mean( sub_seer_df[ , "survival_months" ] )
+var( seer_df[ , "survival_months" ] )
 
-dbGetQuery( db , 
-	"SELECT 
-		VARIANCE( survival_months ) , 
-		STDEV( survival_months ) 
-	FROM " 
+tapply(
+	seer_df[ , "survival_months" ] ,
+	seer_df[ , "race_ethnicity" ] ,
+	var 
 )
-
-dbGetQuery( db , 
-	"SELECT 
-		race_ethnicity , 
-		VARIANCE( survival_months ) AS var_survival_months ,
-		STDEV( survival_months ) AS stddev_survival_months
-	FROM 
-	GROUP BY race_ethnicity" 
-)
-seer_slim_df <- 
-	dbGetQuery( db , 
-		"SELECT 
-			survival_months , 
-			female ,
-			marital_status_at_dx
-		FROM " 
-	)
-
-t.test( survival_months ~ female , seer_slim_df )
-this_table <-
-	table( seer_slim_df[ , c( "female" , "marital_status_at_dx" ) ] )
+t.test( survival_months ~ female , seer_df )
+this_table <- table( seer_df[ , c( "female" , "marital_status_at_dx" ) ] )
 
 chisq.test( this_table )
 glm_result <- 
 	glm( 
 		survival_months ~ female + marital_status_at_dx , 
-		data = seer_slim_df
+		data = seer_df
 	)
 
 summary( glm_result )
 library(dplyr)
-library(dbplyr)
-dplyr_db <- dplyr::src_sqlite( dbdir )
-seer_tbl <- tbl( dplyr_db , '' )
+seer_tbl <- tbl_df( seer_df )
 seer_tbl %>%
 	summarize( mean = mean( survival_months ) )
 
