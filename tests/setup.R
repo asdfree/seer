@@ -48,7 +48,6 @@ seer_df <-
 					)
 			)
 	)
-	
 nrow( seer_df )
 
 table( seer_df[ , "race_ethnicity" ] , useNA = "always" )
